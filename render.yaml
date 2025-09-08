@@ -1,0 +1,18 @@
+services:
+  # Um nome para o seu serviço web
+  - type: web
+    name: meu-app-spring # Pode trocar para o nome que preferir
+    # Indica que o ambiente é Java. ESSA É A PARTE IMPORTANTE!
+    env: java
+    # O comando para compilar seu projeto (já com a correção de permissão)
+    buildCommand: "./mvnw clean package"
+    # O comando para iniciar sua aplicação
+    startCommand: "java -jar target/*.jar"
+    # Configurações do plano. O 'free' é o gratuito.
+    plan: free
+    # (Opcional) Adicione variáveis de ambiente aqui se precisar
+    envVars:
+      - key: JAVA_VERSION
+        value: 17
+      - key: SPRING_PROFILES_ACTIVE
+        value: production
