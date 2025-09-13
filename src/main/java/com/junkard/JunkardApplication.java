@@ -16,7 +16,6 @@ public class JunkardApplication extends SpringBootServletInitializer {
 
     @Override
     protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-        return application.sources(JunkardApplication.class)
-                        .initializers(new ProfileInitializer());
+    	return application.sources(JunkardApplication.class);
     }
 }

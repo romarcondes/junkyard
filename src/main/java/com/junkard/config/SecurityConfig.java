@@ -1,8 +1,6 @@
 package com.junkard.config;
 
-import java.util.Arrays;
-import java.util.List;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -10,27 +8,54 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import lombok.RequiredArgsConstructor;
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-@EnableMethodSecurity
+@EnableMethodSecurity // Mantém a segurança em nível de método ativa
 public class SecurityConfig {
+
+    // Injeta o seu filtro JWT para que possamos usá-lo
+    private final JwtAuthFilter jwtAuthFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors().and().csrf().disable()
-            .authorizeRequests()
-                .antMatchers("/**").permitAll();
+            .cors().and()
+            .csrf().disable()
+            
+            // --- INÍCIO DAS NOVAS CONFIGURAÇÕES ---
+
+            // 1. Define as regras de autorização para os endpoints
+            .authorizeHttpRequests(auth -> auth
+                .antMatchers("/api/auth/**", "/api/users/public/**").permitAll()
+                // Libera os endpoints do Swagger UI para documentação
+                .antMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                // Exige autenticação para qualquer outra requisição
+                .anyRequest().authenticated()
+            )
+
+            // 2. Configura a sessão para ser STATELESS (sem estado)
+            // O servidor não guardará a sessão do usuário, dependendo apenas do token JWT
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+
+            // 3. Adiciona o seu filtro JWT para ser executado ANTES do filtro padrão de login
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        
+        // --- FIM DAS NOVAS CONFIGURAÇÕES ---
 
         return http.build();
     }

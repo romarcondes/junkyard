@@ -1,22 +1,24 @@
 package com.junkard.service;
 
-import com.junkard.model.Permission;
+import java.security.Key;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
+
 import com.junkard.model.User;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
-
-import java.security.Key;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 public class JwtService {
@@ -43,20 +45,32 @@ public class JwtService {
     }
 
     /**
-     * O MÉTODO PRINCIPAL ATUALIZADO
-     * Gera um token JWT para um usuário específico, incluindo seu nome e permissões.
+     * O MÉTODO PRINCIPAL CORRIGIDO
+     * Gera um token JWT para um usuário específico, incluindo seu nome e uma LISTA de permissões.
      * @param user O objeto User completo, vindo do banco de dados.
      * @return Uma string com o Token JWT.
      */
     public String generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();
-
         claims.put("name", user.getName());
 
-        String authorities = user.getRole().getPermissions().stream()
-                .map(Permission::getName)
-                .collect(Collectors.joining(","));
+        // --- INÍCIO DA CORREÇÃO ---
+
+        // 1. Cria uma lista de Strings para as permissões.
+        List<String> authorities = new ArrayList<>();
+
+        // 2. Adiciona o PAPEL (ROLE) à lista (ex: "ROLE_ADMIN").
+        authorities.add("ROLE_" + user.getRole().getName());
+        
+        // 3. Adiciona todas as PERMISSÕES (PERMISSIONS) do papel à lista.
+        user.getRole().getPermissions().forEach(permission -> {
+            authorities.add(permission.getName());
+        });
+
+        // 4. Adiciona a LISTA completa ao token.
         claims.put("authorities", authorities);
+
+        // --- FIM DA CORREÇÃO ---
 
         return buildToken(claims, user, jwtExpiration);
     }
