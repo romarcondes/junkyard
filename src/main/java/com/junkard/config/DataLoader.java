@@ -36,11 +36,16 @@ public class DataLoader implements CommandLineRunner {
             Permission accessRouting = createPermission("ACCESS_ROUTING");
             Permission accessDashboard = createPermission("ACCESS_DASHBOARD");
             Permission accessUserManagement = createPermission("ACCESS_USER_MANAGEMENT");
-            Permission accessRoleManagement = createPermission("ACCESS_ROLE_MANAGEMENT"); // <-- NOME PADRONIZADO
+            Permission accessRoleManagement = createPermission("ACCESS_ROLE_MANAGEMENT");
+            Permission accessOrderSearch = createPermission("ACCESS_ORDER_SEARCH");
+            Permission accessSearchCustomer = createPermission("ACCESS_SEARCH_CUSTOMER");
+            Permission accessCustomerDetails = createPermission("ACCESS_CUSTOMER_DETAILS");
+            Permission accessOrderDetails = createPermission("ACCESS_ORDER_DETAILS");
+
 
             // 2. Criar Perfis (Roles) e associar as permissões
-            createRole("ADMIN", Set.of(accessNewOrder, accessNewClient, accessNewDriver, accessRouting, accessDashboard, accessUserManagement, accessRoleManagement));
-            createRole("USER", Set.of(accessNewOrder, accessNewClient, accessNewDriver, accessRouting));
+            createRole("ADMIN", Set.of(accessNewOrder, accessNewClient, accessNewDriver, accessRouting, accessDashboard, accessUserManagement, accessRoleManagement, accessSearchCustomer, accessCustomerDetails, accessOrderSearch, accessOrderDetails));
+            createRole("USER", Set.of(accessNewOrder, accessNewClient, accessNewDriver, accessRouting, accessSearchCustomer, accessCustomerDetails, accessOrderSearch, accessOrderDetails));
             createRole("PENDING_APPROVAL", Collections.emptySet());
 
             // 3. Criar o Usuário Administrador Padrão
