@@ -38,31 +38,38 @@ public class OrderService {
             customer = customerRepository.findById(dto.getCustomerId())
                     .orElseThrow(() -> new IllegalArgumentException("Customer not found with ID: " + dto.getCustomerId()));
         } else if (dto.getNewCustomer() != null) {
+            // Se for um novo cliente, utiliza o CustomerService para o criar
             customer = customerService.createCustomer(dto.getNewCustomer());
         } else {
             throw new IllegalArgumentException("Customer information (customerId or newCustomer) is required.");
         }
 
-        // Passo 2: Encontrar o endereço principal do cliente
-        Address primaryAddress = customer.getAddresses().stream()
-                .filter(Address::isPrimary)
+        // --- INÍCIO DA CORREÇÃO ---
+        // Passo 2: Encontrar o endereço principal do cliente de forma mais robusta.
+        Address pickupAddress = customer.getAddresses().stream()
+                .filter(Address::isPrimary) // Primeiro, tenta encontrar o endereço marcado como principal.
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("The selected customer does not have a primary address."));
+                // Se nenhum for principal, pega no primeiro endereço da lista como alternativa.
+                .or(() -> customer.getAddresses().stream().findFirst())
+                // Se, e só se, não houver nenhum endereço, lança um erro.
+                .orElseThrow(() -> new IllegalArgumentException("The customer must have at least one address to create an order."));
+        // --- FIM DA CORREÇÃO ---
+
 
         // Passo 3: Criar e preencher a entidade Order
         Order order = new Order();
         order.setCustomer(customer);
-        order.setPickupAddress(primaryAddress);
+        order.setPickupAddress(pickupAddress);
         order.setVehiclePlate(dto.getVehiclePlate());
         order.setVehicleModel(dto.getVehicleModel());
         order.setOrderValue(dto.getOrderValue());
         order.setScheduledDateTime(dto.getScheduledDateTime());
-        order.setStatus("SCHEDULED");
+        order.setStatus("SCHEDULED"); // O pedido nasce sempre com o estado "Agendado"
 
         // Passo 4: Salvar e devolver o novo pedido
         return orderRepository.save(order);
     }
-
+    
     /**
      * Procura pedidos com base em filtros opcionais, com paginação e ordenação.
      */
