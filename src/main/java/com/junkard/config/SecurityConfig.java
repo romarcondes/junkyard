@@ -16,7 +16,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
+import org.springframework.http.HttpMethod;
 import java.util.Arrays;
 import java.util.List;
 
@@ -39,7 +39,7 @@ public class SecurityConfig {
 
             // 1. Define as regras de autorização para os endpoints
             .authorizeHttpRequests(auth -> auth
-                .antMatchers("/api/auth/**", "/api/users/public/**").permitAll()
+                .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 // Libera os endpoints do Swagger UI para documentação
                 .antMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 // Exige autenticação para qualquer outra requisição
